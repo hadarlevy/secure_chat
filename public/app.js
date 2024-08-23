@@ -16,11 +16,13 @@ function register() {
       if (!res.ok) {
         return res.text().then(text => { throw new Error(text) });
       }
-      return res.text();
+      // Redirect to chat page upon successful registration
+      document.getElementById('register-login').style.display = 'none';
+      document.getElementById('chat').style.display = 'block';
     })
-    .then(data => alert(data))
     .catch(error => alert(`Registration failed: ${error.message}`));
 }
+
 
 // Function to log in a user
 function login() {
@@ -34,13 +36,20 @@ function login() {
     },
     body: JSON.stringify({ username, password }),
   })
-    .then(res => res.json())
+    .then(res => {
+      if (!res.ok) {
+        return res.text().then(text => { throw new Error(text) });
+      }
+      return res.json();
+    })
     .then(data => {
       token = data.token;
       document.getElementById('register-login').style.display = 'none';
       document.getElementById('chat').style.display = 'block';
-    });
+    })
+    .catch(error => alert(`Login failed: ${error.message}`));
 }
+
 
 // Function to send a message
 async function sendMessage() {
