@@ -20,12 +20,23 @@
 
     <div id="chat" style="display:none;">
       <h2>Chat</h2>
-      <div id="message-box"></div>
+      <div id="message-box">
+        <div id="sent-messages">
+          <h3>Sent Messages</h3>
+          <div id="sent-messages-content"></div>
+        </div>
+        <div id="received-messages">
+          <h3>Received Messages</h3>
+          <div id="received-messages-content"></div>
+        </div>
+      </div>
       <input type="text" id="receiver" placeholder="Receiver's Username">
       <input type="text" id="message" placeholder="Type your message">
       <button onclick="sendMessage()">Send</button>
       <button onclick="loadMessages()">Load Messages</button>
     </div>
+
+
   </div>
 
   <script src="app.js"></script>

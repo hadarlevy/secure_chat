@@ -16,6 +16,8 @@ function register() {
       if (!res.ok) {
         return res.text().then(text => { throw new Error(text) });
       }
+      // Save the username in local storage
+      localStorage.setItem('username', username);
       // Redirect to chat page upon successful registration
       document.getElementById('register-login').style.display = 'none';
       document.getElementById('chat').style.display = 'block';
@@ -44,6 +46,8 @@ function login() {
     })
     .then(data => {
       token = data.token;
+      // Save the username in local storage
+      localStorage.setItem('username', username);
       document.getElementById('register-login').style.display = 'none';
       document.getElementById('chat').style.display = 'block';
     })
@@ -51,11 +55,12 @@ function login() {
 }
 
 
+
 // Function to send a message
 async function sendMessage() {
   const receiver = document.getElementById('receiver').value;
   const message = document.getElementById('message').value;
-
+  const username = localStorage.getItem('username');
   // Generate a 256-bit key for AES encryption
   const key = await crypto.subtle.generateKey(
     {
@@ -94,6 +99,7 @@ async function sendMessage() {
       'Authorization': token,
     },
     body: JSON.stringify({
+      sender: username,
       message: encryptedMessageHex,
       key: keyHex,
       receiver,
@@ -115,22 +121,39 @@ async function sendMessage() {
 
 
 
+
 // Function to load and display messages
 function loadMessages() {
+  const username = localStorage.getItem('username');
   fetch('/messages', {
     method: 'GET',
     headers: {
       'Authorization': token,
+      'username': username
     },
   })
     .then(res => res.json())
     .then(messages => {
-      const messageBox = document.getElementById('message-box');
-      messageBox.innerHTML = '';
+      // Get the content divs
+      const sentMessagesContent = document.getElementById('sent-messages-content');
+      const receivedMessagesContent = document.getElementById('received-messages-content');
+
+      // Clear the message content, but keep the headers
+      sentMessagesContent.innerHTML = '';
+      receivedMessagesContent.innerHTML = '';
+
       messages.forEach(msg => {
         const messageElement = document.createElement('div');
-        messageElement.textContent = `From: ${msg.sender}, To: ${msg.receiver}, Message: ${msg.encryptedData}`;
-        messageBox.appendChild(messageElement);
+        if (msg.sender === username) {
+          messageElement.textContent = `To: ${msg.receiver}, Message: ${msg.encryptedData}`;
+          sentMessagesContent.appendChild(messageElement);
+        } else {
+          messageElement.textContent = `From: ${msg.sender}, Message: ${msg.encryptedData}`;
+          receivedMessagesContent.appendChild(messageElement);
+        }
       });
-    });
+    })
+    .catch(error => console.error('Error loading messages:', error));
 }
+
+

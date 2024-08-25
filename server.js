@@ -54,7 +54,7 @@ function authenticateToken(req, res, next) {
 
 // Endpoint for sending a message
 app.post('/send-message', authenticateToken, async (req, res) => {
-  const { message, key, receiver, iv } = req.body;
+  const { sender, message, key, receiver, iv } = req.body;
 
   if (!message || !key || !receiver || !iv) {
     return res.status(400).send('Missing required fields');
@@ -70,8 +70,8 @@ app.post('/send-message', authenticateToken, async (req, res) => {
 
     // Save the encrypted message to MongoDB
     const newMessage = new Message({
-      sender: req.user.id,
-      receiver,
+      sender, // This is the sender's ID
+      receiver, // Save receiver as it is, no encryption applied
       encryptedData: message,
       iv: iv,
     });
@@ -87,11 +87,13 @@ app.post('/send-message', authenticateToken, async (req, res) => {
 
 
 
+
 // Endpoint to retrieve messages for authenticated user
 app.get('/messages', authenticateToken, async (req, res) => {
   try {
+    const username = req.headers['username'];
     const messages = await Message.find({
-      $or: [{ sender: req.user.id }, { receiver: req.user.id }],
+      $or: [{ sender: username }, { receiver: username }],
     });
     res.json(messages);
   } catch (error) {
@@ -107,3 +109,5 @@ app.use('/auth', authRoutes);
 https.createServer(options, app).listen(9001, () => {
   console.log('Secure server running on port 9001');
 });
+
+
