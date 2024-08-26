@@ -1,5 +1,5 @@
-**Secure Chat App
-**
+**Secure Chat App**
+
 *User Manual:*
 
 1. Setup
