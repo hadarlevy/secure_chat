@@ -67,6 +67,7 @@ app.post('/send-message', authenticateToken, async (req, res) => {
 
     // Decrypt the message using the provided key and iv
     const decryptedMessage = decryptMessage(message, keyBuffer.toString('hex'), ivBuffer.toString('hex'));
+    console.log(decryptedMessage);
 
     // Save the encrypted message to MongoDB
     const newMessage = new Message({
@@ -74,6 +75,7 @@ app.post('/send-message', authenticateToken, async (req, res) => {
       receiver, // Save receiver as it is, no encryption applied
       encryptedData: message,
       iv: iv,
+      key: key,
     });
 
     await newMessage.save();
@@ -88,6 +90,7 @@ app.post('/send-message', authenticateToken, async (req, res) => {
 
 
 
+
 // Endpoint to retrieve messages for authenticated user
 app.get('/messages', authenticateToken, async (req, res) => {
   try {
@@ -96,6 +99,25 @@ app.get('/messages', authenticateToken, async (req, res) => {
       $or: [{ sender: username }, { receiver: username }],
     });
     res.json(messages);
+  } catch (error) {
+    console.error('Error retrieving messages:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.get('/decrypt-messages', async (req, res) => {
+  try {
+    const key = req.headers['key'];
+    const iv = req.headers['iv'];
+    const data = req.headers['data'];
+
+    const keyBuffer = Buffer.from(key, 'hex');
+    const ivBuffer = Buffer.from(iv, 'hex');
+
+    // Decrypt the message using the provided key and iv
+    const message = decryptMessage(data, keyBuffer.toString('hex'), ivBuffer.toString('hex'));
+    res.json(message);
+    console.log(message)
   } catch (error) {
     console.error('Error retrieving messages:', error);
     res.status(500).send('Internal Server Error');

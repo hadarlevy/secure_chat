@@ -156,4 +156,49 @@ function loadMessages() {
     .catch(error => console.error('Error loading messages:', error));
 }
 
+function decryptClientMessages() {
+  const username = localStorage.getItem('username');
+  fetch('/messages', {
+    method: 'GET',
+    headers: {
+      'Authorization': token,
+      'username': username
+    },
+  })
+    .then(res => res.json())
+    .then(messages => {
+      // Get the content divs
+      const sentMessagesContent = document.getElementById('sent-messages-content');
+      const receivedMessagesContent = document.getElementById('received-messages-content');
+
+      // Clear the message content, but keep the headers
+      sentMessagesContent.innerHTML = '';
+      receivedMessagesContent.innerHTML = '';
+
+      messages.forEach(msg => {
+        fetch('/decrypt-messages', {
+          method: 'GET',
+          headers: {
+            'key': msg.key,
+            'iv': msg.iv,
+            'data': msg.encryptedData
+          },
+        })
+          .then(res => res.json())
+          .then(message => {
+            const messageElement = document.createElement('div');
+            // Convert key and iv from hex to Buffer
+
+            if (msg.sender === username) {
+              messageElement.textContent = `To: ${msg.receiver}, Message: ${message}`;
+              sentMessagesContent.appendChild(messageElement);
+            } else {
+              messageElement.textContent = `From: ${msg.sender}, Message: ${message}`;
+              receivedMessagesContent.appendChild(messageElement);
+            }
+          });
+      })
+    })
+    .catch(error => console.error('Error loading messages:', error));
+}
 

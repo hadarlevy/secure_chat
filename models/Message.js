@@ -5,6 +5,7 @@ const messageSchema = new mongoose.Schema({
   receiver: { type: String, required: true },
   encryptedData: { type: String, required: true },
   iv: { type: String, required: true },
+  key: { type: String, required: true },
   timestamp: { type: Date, default: Date.now },
 });
 
