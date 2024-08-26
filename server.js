@@ -132,4 +132,4 @@ https.createServer(options, app).listen(9001, () => {
   console.log('Secure server running on port 9001');
 });
 
-
+module.exports = app;
